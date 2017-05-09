@@ -11,6 +11,44 @@
 |
 */
 
+use App\Album;
+use Illuminate\Http\Request;
+
+/**
+ * Display albums list
+ */
 Route::get('/', function () {
-    return view('welcome');
+    $albums = Album::orderBy('created_at', 'desc')->get();
+    return view('albums', [
+        'albums' => $albums
+    ]);
+});
+
+/**
+ * Add new album
+ */
+Route::post('/album', function (Request $request) {
+    $validator = Validator::make($request->all(), [
+        'album_name' => 'required|max:255',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect('/')
+            ->withInput()
+            ->withErrors($validator);
+    }
+
+    $album = new Album();
+    $album->name = $request->album_name;
+    $album->save();
+
+    return redirect('/');
+});
+
+/**
+ * Delete album
+ */
+Route::delete('/album/{album}', function (Album $album) {
+    $album->delete();
+    return redirect('/');
 });
